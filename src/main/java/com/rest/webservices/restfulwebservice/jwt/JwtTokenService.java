@@ -20,20 +20,18 @@ public class JwtTokenService {
         this.jwtEncoder = jwtEncoder;
     }
 
-    public String generateToken(Authentication authentication) {
-
-        var scope = authentication
-                .getAuthorities()
-                .stream()
+    private String createScope(Authentication authentication) {
+        return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
-
-        var claims = JwtClaimsSet.builder()
+    }
+    public String generateToken(Authentication authentication) {
+        JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plus(90, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
-                .claim("scope", scope)
+                .claim("scope", createScope(authentication))
                 .build();
 
         return this.jwtEncoder

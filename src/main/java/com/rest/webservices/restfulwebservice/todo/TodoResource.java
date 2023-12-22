@@ -4,6 +4,9 @@ import com.rest.webservices.restfulwebservice.todo.Todo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -18,6 +21,10 @@ public class TodoResource {
     private TodoHardcodedService todoService;
 
     @GetMapping("/users/{username}/todos")
+    @PreAuthorize("hasRole('USER') and #username == authentication.name")  //prima di autorizzare il metodo controlla che l'imput metcha con l'authentication #username == authentication.name
+//    @PostAuthorize("returnObject.username == John")  //controlla post methodo che il todo abbia username == John
+//    @RolesAllowed({"USER", "ADMIN"})
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})  //analogo di RolesAllowed ma libreria differente
     public List<Todo> getAllTodos(@PathVariable String username){
         return todoService.findAll();
     }
