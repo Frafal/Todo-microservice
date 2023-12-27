@@ -1,4 +1,4 @@
-package com.rest.webservices.restfulwebservice.jwt;
+package com.rest.jwt;
 
         import java.time.Instant;
         import java.time.temporal.ChronoUnit;

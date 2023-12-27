@@ -19,31 +19,31 @@ public class TodoJpaResource {
     @Autowired
     private TodoJpaRepository todoJpaRepository;
 
-    @GetMapping("/jpa/users/{username}/todos")
+    @GetMapping("/users/{username}/todos")
     public List<Todo> getAllTodos(@PathVariable String username){
 
         return todoJpaRepository.findByUsername(username);
     }
 
-    @GetMapping("/jpa/users/{username}/todos/{id}")
+    @GetMapping("/users/{username}/todos/{id}")
     public Todo getTodo(@PathVariable String username, @PathVariable long id){
         return todoJpaRepository.findById(id).get();
     }
 
-    @DeleteMapping("/jpa/users/{username}/todos/{id}")
+    @DeleteMapping("/users/{username}/todos/{id}")
     public ResponseEntity<Void> deleteTodo(@PathVariable String username, @PathVariable long id){
         todoJpaRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/jpa/users/{username}/todos/{id}")
+    @PutMapping("/users/{username}/todos/{id}")
     public ResponseEntity<Todo> updateTodo(@PathVariable String username, @PathVariable long id, @RequestBody Todo todo){
         Todo todoUpdated = todoJpaRepository.save(todo);
         return new ResponseEntity<Todo>(todo, HttpStatus.OK);
 
     }
 
-    @PostMapping("/jpa/users/{username}/todos")
+    @PostMapping("/users/{username}/todos")
     public ResponseEntity<Void> createTodo(@PathVariable String username, @RequestBody Todo todo){
         todo.setUsername(username);
         Todo createTodo = todoJpaRepository.save(todo);

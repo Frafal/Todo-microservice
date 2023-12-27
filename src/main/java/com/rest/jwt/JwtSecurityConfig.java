@@ -1,4 +1,4 @@
-package com.rest.webservices.restfulwebservice.jwt;
+package com.rest.jwt;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -47,22 +47,22 @@ import javax.sql.DataSource;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 //@EnableMethodSecurity
-@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
+//@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class JwtSecurityConfig {
 
-    @Bean
+//    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, HandlerMappingIntrospector introspector) throws Exception {
         
         // h2-console is a servlet 
         // https://github.com/spring-projects/spring-security/issues/12310
         return httpSecurity
                 .authorizeHttpRequests(auth -> auth
-                    .antMatchers("/authenticate").permitAll()
+                    .requestMatchers("/authenticate").permitAll()
                     .requestMatchers(PathRequest.toH2Console()).permitAll() // h2-console is a servlet and NOT recommended for a production
-                     .antMatchers(HttpMethod.OPTIONS,"/**")
+                     .requestMatchers(HttpMethod.OPTIONS,"/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
@@ -110,8 +110,8 @@ public class JwtSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(
+//    @Bean
+    public AuthenticationManager authenticationManager1(
             UserDetailsService userDetailsService) {
         var authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setPasswordEncoder(passwordEncoder());
