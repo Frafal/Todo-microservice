@@ -10,7 +10,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200", methods = {RequestMethod.GET, RequestMethod.POST,RequestMethod.POST,RequestMethod.OPTIONS, RequestMethod.DELETE})
 public class TodoJpaResource {
 
     @Autowired

@@ -4,24 +4,30 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
+import org.springframework.http.HttpStatus;
 
 @Component
 public class KeycloakLogoutHandler implements LogoutHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(KeycloakLogoutHandler.class);
-    private final RestTemplate restTemplate;
+//    private final RestTemplate restTemplate;
 
-    public KeycloakLogoutHandler(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    private final WebClient webClient;
+
+
+    public KeycloakLogoutHandler(//RestTemplate restTemplate,
+                                 WebClient webClient) {
+        this.webClient = webClient;
+//        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -35,14 +41,23 @@ public class KeycloakLogoutHandler implements LogoutHandler {
         UriComponentsBuilder builder = UriComponentsBuilder
                 .fromUriString(endSessionEndpoint)
                 .queryParam("id_token_hint", user.getIdToken().getTokenValue());
+//
+//        ResponseEntity<String> logoutResponse = restTemplate.getForEntity(
+//                builder.toUriString(), String.class);
 
-        ResponseEntity<String> logoutResponse = restTemplate.getForEntity(
-                builder.toUriString(), String.class);
-        if (logoutResponse.getStatusCode().is2xxSuccessful()) {
-            logger.info("Successfulley logged out from Keycloak");
-        } else {
-            logger.error("Could not propagate logout to Keycloak");
-        }
+
+        Mono<String> logoutResponse = webClient.get()
+                .uri(builder.toUriString())
+                .retrieve()
+                .bodyToMono(String.class)
+                .doOnSuccess(response -> logger.info("Successfulley logged out from Keycloak"))
+                .doOnError(error -> logger.error("Could not propagate logout to Keycloak"));
+//
+//        if (logoutResponse.getStatusCode().is2xxSuccessful()) {
+//            logger.info("Successfulley logged out from Keycloak");
+//        } else {
+//            logger.error("Could not propagate logout to Keycloak");
+//        }
     }
 
 

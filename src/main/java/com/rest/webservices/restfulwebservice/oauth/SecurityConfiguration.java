@@ -5,12 +5,14 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,9 +25,16 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -84,21 +93,68 @@ public class SecurityConfiguration {
 //
 //        return httpSecurity.build();
 //    }
+//    @Bean
+//    public CorsConfigurationSource corsConfig(){
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("http://localhost:4200")
+//                        .allowedMethods(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name(), HttpMethod.OPTIONS.name())
+//                        .allowedHeaders(HttpHeaders.CONTENT_TYPE, HttpHeaders.AUTHORIZATION)
+//                        .allowCredentials(true);
+//            }
+//        };
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(List.of("http://localhost:4200","http://localhost:4200/","http://localhost:9090"));
+//
+//        // tried this too but without any luck.
+//        // configuration.setAllowedOrigins(Arrays.asList("localhost:4200"));
+//
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/users/*", configuration);
+//        source.registerCorsConfiguration("/authenticate", configuration);
+//        return source;
+//    }
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().
+                requestMatchers(new AntPathRequestMatcher("/h2-console/**"));
+//                .requestMatchers(new AntPathRequestMatcher( "/favicon.ico"))
+//                .requestMatchers(new AntPathRequestMatcher( "/css/**"))
+//                .requestMatchers(new AntPathRequestMatcher( "/js/**"))
+//                .requestMatchers(new AntPathRequestMatcher( "/img/**"))
+//                .requestMatchers(new AntPathRequestMatcher( "/lib/**"));
+
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
-        MvcRequestMatcher.Builder mvcMatcherBuilder = new MvcRequestMatcher.Builder(introspector);
+
        return http
+               .csrf(AbstractHttpConfigurer::disable)
+//               .csrf(csrf -> csrf.ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/**")))
+//               .cors(cors -> cors.configurationSource(corsConfig()))
+               .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(mvcMatcherBuilder.pattern("/authenticate")).permitAll()
+//                        .requestMatchers(mvcMatcherBuilder.pattern("/authenticate"),PathRequest.toH2Console()).permitAll()
 //                        .requestMatchers(mvcMatcherBuilder.pattern(API_URL_PATTERN)).permitAll()
-                        .requestMatchers(PathRequest.toH2Console()).permitAll() // h2-console is a servlet and NOT recommended for a production
-                        .requestMatchers(new AntPathRequestMatcher("/users/*"))
+//                        .requestMatchers().permitAll() // h2-console is a servlet and NOT recommended for a production
+//                        .requestMatchers(new AntPathRequestMatcher("/users/*"))
+//                        .requestMatchers(HttpMethod.OPTIONS).permitAll()
+                        .requestMatchers(new MvcRequestMatcher(introspector,"/authenticate")).permitAll()
+//                        .requestMatchers(HttpMethod.OPTIONS, "/users/*").permitAll()
+                        .requestMatchers(new MvcRequestMatcher(introspector, "/users/*"))//.permitAll()
+
+//                        .requestMatchers(mvcMatcherBuilder.pattern("/users/*"))
                         .hasRole("USER")
                         .anyRequest()
-                        .authenticated())
-                .csrf(AbstractHttpConfigurer::disable)
+                        .authenticated()
+                )
+
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Login(Customizer.withDefaults())
                 .logout(Customizer.withDefaults())

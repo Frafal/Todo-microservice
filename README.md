@@ -10,3 +10,12 @@ curl --location 'http://localhost:9090/realms/MyAppRealm/protocol/openid-connect
 --data-urlencode 'client_id=My-Awesome-App' \
 --data-urlencode 'client_secret=<KEYCLOAK_CLIENT_SECRET>' \
 --data-urlencode 'scope=openid'
+
+
+
+curl \
+-d "client_id=login-app" \
+-d "username=user1" \
+-d "password=password" \
+-d "grant_type=password" \
+"http://localhost:9090/realms/SpringBootKeycloak/protocol/openid-connect/token"
