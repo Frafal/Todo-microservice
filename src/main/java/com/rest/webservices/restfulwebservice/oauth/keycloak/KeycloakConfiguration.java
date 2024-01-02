@@ -1,4 +1,4 @@
-package com.rest.webservices.restfulwebservice.oauth;
+package com.rest.webservices.restfulwebservice.oauth.keycloak;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -1,4 +1,4 @@
-package com.rest.basic.auth;
+package com.rest.deprecated.basic.auth;
 
 
 import org.springframework.context.annotation.Bean;

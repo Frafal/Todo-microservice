@@ -1,11 +1,9 @@
-package com.rest.webservices.restfulwebservice.oauth;
+package com.rest.webservices.restfulwebservice.oauth.keycloak;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
-import org.springframework.http.HttpStatus;
 
 @Component
 public class KeycloakLogoutHandler implements LogoutHandler {

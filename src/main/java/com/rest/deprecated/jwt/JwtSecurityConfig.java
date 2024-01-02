@@ -1,4 +1,4 @@
-package com.rest.jwt;
+package com.rest.deprecated.jwt;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;

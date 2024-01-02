@@ -1,49 +1,44 @@
 package com.rest.webservices.restfulwebservice.oauth;
 
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import com.rest.webservices.restfulwebservice.oauth.keycloak.KeycloakLogoutHandler;
+import com.rest.webservices.restfulwebservice.oauth.keycloak.SpringAddonsJwtAuthenticationConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
+
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.client.RestTemplate;
+
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 import static org.springframework.security.config.Customizer.withDefaults;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfiguration {
     private final KeycloakLogoutHandler keycloakLogoutHandler;
+
 
     public SecurityConfiguration(KeycloakLogoutHandler keycloakLogoutHandler) {
         this.keycloakLogoutHandler = keycloakLogoutHandler;
@@ -54,70 +49,11 @@ public class SecurityConfiguration {
         return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
     }
 
-    //http.oauth2Login(Customizer.withDefaults())
-//        .logout(Customizer.withDefaults())
-//            .logout((logout) -> logout.addLogoutHandler(keycloakLogoutHandler))
-//            .logout(logout -> logout.logoutSuccessUrl("/"));
-//@Order(1)
-
     @Bean
     MvcRequestMatcher.Builder mvc(HandlerMappingIntrospector introspector) {
         return new MvcRequestMatcher.Builder(introspector);
     }
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, MvcRequestMatcher.Builder mvc) throws Exception {
-//        httpSecurity
-//                .authorizeHttpRequests(registry -> registry
-//                        .requestMatchers(mvc.pattern("/authenticate")).permitAll()
-//                        .requestMatchers(new AntPathRequestMatcher("/h2-console/*")).permitAll() // h2-console is a servlet and NOT recommended for a production
-////                        .requestMatchers(HttpMethod.OPTIONS, String.valueOf(mvc.pattern("/users/**"))).hasRole("USER")
-//                        .anyRequest().authenticated()
-//                )
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .httpBasic(withDefaults())
-//                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-//                .oauth2ResourceServer(oauth2Configurer ->
-//                        oauth2Configurer.jwt(
-//                                jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(
-//                                        jwt -> {
-//                                            Map<String, Collection<String>> realmAccess = jwt.getClaim("realm_access");
-//                                            Collection<String> roles = realmAccess.get("roles");
-//                                            var grantedAuthorities = roles.stream()
-//                                                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-//                                                    .toList();
-//                                            return new JwtAuthenticationToken(jwt, grantedAuthorities);
-//                                        })))
-//        ;
-//
-//        return httpSecurity.build();
-//    }
-//    @Bean
-//    public CorsConfigurationSource corsConfig(){
-//        return new WebMvcConfigurer() {
-//            @Override
-//            public void addCorsMappings(CorsRegistry registry) {
-//                registry.addMapping("/**")
-//                        .allowedOrigins("http://localhost:4200")
-//                        .allowedMethods(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name(), HttpMethod.OPTIONS.name())
-//                        .allowedHeaders(HttpHeaders.CONTENT_TYPE, HttpHeaders.AUTHORIZATION)
-//                        .allowCredentials(true);
-//            }
-//        };
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(List.of("http://localhost:4200","http://localhost:4200/","http://localhost:9090"));
-//
-//        // tried this too but without any luck.
-//        // configuration.setAllowedOrigins(Arrays.asList("localhost:4200"));
-//
-//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/users/*", configuration);
-//        source.registerCorsConfiguration("/authenticate", configuration);
-//        return source;
-//    }
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -132,68 +68,58 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+    public CorsConfigurationSource corsFilter() {
 
-       return http
-               .csrf(AbstractHttpConfigurer::disable)
-//               .csrf(csrf -> csrf.ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/**")))
-//               .cors(cors -> cors.configurationSource(corsConfig()))
-               .cors(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(mvcMatcherBuilder.pattern("/authenticate"),PathRequest.toH2Console()).permitAll()
-//                        .requestMatchers(mvcMatcherBuilder.pattern(API_URL_PATTERN)).permitAll()
-//                        .requestMatchers().permitAll() // h2-console is a servlet and NOT recommended for a production
-//                        .requestMatchers(new AntPathRequestMatcher("/users/*"))
-//                        .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                        .requestMatchers(new MvcRequestMatcher(introspector,"/authenticate")).permitAll()
-//                        .requestMatchers(HttpMethod.OPTIONS, "/users/*").permitAll()
-                        .requestMatchers(new MvcRequestMatcher(introspector, "/users/*"))//.permitAll()
+        final CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:4200"); // this allows all origin
+        config.addAllowedHeader("*"); // this allows all headers
+        config.addAllowedMethod("OPTIONS");
+        config.addAllowedMethod("HEAD");
+        config.addAllowedMethod("GET");
+        config.addAllowedMethod("PUT");
+        config.addAllowedMethod("POST");
+        config.addAllowedMethod("DELETE");
+        config.addAllowedMethod("PATCH");
 
-//                        .requestMatchers(mvcMatcherBuilder.pattern("/users/*"))
-                        .hasRole("USER")
-                        .anyRequest()
-                        .authenticated()
-                )
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, HandlerMappingIntrospector introspector
+            , SpringAddonsJwtAuthenticationConverter springAddonsJwtAuthenticationConverter) throws Exception {
+
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsFilter()))
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Login(Customizer.withDefaults())
+                .oauth2Client(Customizer.withDefaults())
                 .logout(Customizer.withDefaults())
                 .logout((logout) -> logout.addLogoutHandler(keycloakLogoutHandler))
                 .logout(logout -> logout.logoutSuccessUrl("http://localhost:4200"))
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
+//                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(springAddonsJwtAuthenticationConverter)))
+                .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, authException) -> {
+                    response.addHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer realm=\"Restricted Content\"");
+                    response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                }))
+
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(new MvcRequestMatcher(introspector, "/authenticate")).permitAll()
+                        .requestMatchers(new MvcRequestMatcher(introspector, "/users/*")).permitAll() //.hasAnyRole()
+//                        .hasAuthority("REALM_ROLE_user")
+                        .anyRequest()
+                        .authenticated()
+                )
                 .httpBasic(withDefaults())
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .build();
 
     }
 
-
-//public SecurityFilterChain clientFilterChain(HttpSecurity http) throws Exception {
-//    http.authorizeRequests()
-//            .requestMatchers(new AntPathRequestMatcher("/console/**")).permitAll()
-//            .requestMatchers(new AntPathRequestMatcher("/"))
-//            .permitAll()
-//            .anyRequest()
-//            .authenticated();
-//http.oauth2Login(Customizer.withDefaults())
-//        .logout(Customizer.withDefaults())
-//            .logout((logout) -> logout.addLogoutHandler(keycloakLogoutHandler))
-//            .logout(logout -> logout.logoutSuccessUrl("/"));
-//    return http.build();
-//}
-//
-//    @Order(2)
-//    @Bean
-//    public SecurityFilterChain resourceServerFilterChain(HttpSecurity http) throws Exception {
-//        http.authorizeRequests()
-//
-//                .requestMatchers(new AntPathRequestMatcher("/customers*"))
-//                .hasRole("USER")
-//                .anyRequest()
-//                .authenticated();
-//        http.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()));
-//        return http.build();
-//    }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {

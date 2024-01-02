@@ -1,5 +1,7 @@
-package com.rest.webservices.restfulwebservice.todo;
+package com.rest.deprecated;
 
+import com.rest.webservices.restfulwebservice.todo.Todo;
+import com.rest.webservices.restfulwebservice.todo.TodoHardcodedService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

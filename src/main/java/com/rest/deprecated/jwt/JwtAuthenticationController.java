@@ -1,4 +1,4 @@
-package com.rest.jwt;
+package com.rest.deprecated.jwt;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;

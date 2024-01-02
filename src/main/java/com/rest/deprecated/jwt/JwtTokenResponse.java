@@ -1,4 +1,4 @@
-package com.rest.jwt;
+package com.rest.deprecated.jwt;
 
 import lombok.*;
 

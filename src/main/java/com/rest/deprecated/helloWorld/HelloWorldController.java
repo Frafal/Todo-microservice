@@ -1,4 +1,4 @@
-package com.rest.webservices.restfulwebservice.helloWorld;
+package com.rest.deprecated.helloWorld;
 
 import org.springframework.web.bind.annotation.*;
 
