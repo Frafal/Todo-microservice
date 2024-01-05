@@ -1,12 +1,9 @@
 package com.rest.deprecated.jwt;
 
-import lombok.*;
 
-//@AllArgsConstructor
-////@NoArgsConstructor
-//@EqualsAndHashCode
-//@Getter
-@Data
-public class JwtTokenResponse {
-    private final String token;
+public record JwtTokenResponse(String access_token, Integer expires_in,
+                               String refresh_token, Integer refresh_expires_in, String token_type
+        , Integer not_before_policy, String session_state, String scope) {
+
+
 }

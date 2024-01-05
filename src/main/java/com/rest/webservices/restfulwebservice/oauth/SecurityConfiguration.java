@@ -1,7 +1,10 @@
 package com.rest.webservices.restfulwebservice.oauth;
 
-import com.rest.webservices.restfulwebservice.oauth.keycloak.KeycloakLogoutHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rest.webservices.restfulwebservice.oauth.keycloak.SpringAddonsJwtAuthenticationConverter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,19 +20,30 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.session.SessionRegistryImpl;
 
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -37,12 +51,14 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfiguration {
-    private final KeycloakLogoutHandler keycloakLogoutHandler;
 
-
-    public SecurityConfiguration(KeycloakLogoutHandler keycloakLogoutHandler) {
-        this.keycloakLogoutHandler = keycloakLogoutHandler;
-    }
+    //deprecate logout in microservice
+//    private final KeycloakLogoutHandler keycloakLogoutHandler;
+//
+//
+//    public SecurityConfiguration(KeycloakLogoutHandler keycloakLogoutHandler) {
+//        this.keycloakLogoutHandler = keycloakLogoutHandler;
+//    }
 
     @Bean
     protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
@@ -94,23 +110,24 @@ public class SecurityConfiguration {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsFilter()))
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2Login(Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .oauth2Login(Customizer.withDefaults())
                 .oauth2Client(Customizer.withDefaults())
-                .logout(Customizer.withDefaults())
-                .logout((logout) -> logout.addLogoutHandler(keycloakLogoutHandler))
-                .logout(logout -> logout.logoutSuccessUrl("http://localhost:4200"))
-//                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
+//                .logout(Customizer.withDefaults())
+//                .logout((logout) -> logout.addLogoutHandler(keycloakLogoutHandler))
+//                .logout(logout -> logout.logoutSuccessUrl("http://localhost:4200"))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(springAddonsJwtAuthenticationConverter)))
                 .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, authException) -> {
                     response.addHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer realm=\"Restricted Content\"");
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+                    authException.setStackTrace(new StackTraceElement[0]);
                 }))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(new MvcRequestMatcher(introspector, "/authenticate")).permitAll()
+//                        .requestMatchers(new MvcRequestMatcher(introspector, "/oidc/authenticate")).permitAll()
+//                        .requestMatchers(new MvcRequestMatcher(introspector, "/oidc/refreshtoken")).permitAll()
                         .requestMatchers(new MvcRequestMatcher(introspector, "/users/*")).permitAll() //.hasAnyRole()
-//                        .hasAuthority("REALM_ROLE_user")
+//                        .hasAuthority("REALM_ROLE_USER")
                         .anyRequest()
                         .authenticated()
                 )
@@ -120,12 +137,20 @@ public class SecurityConfiguration {
 
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
                 .build();
     }
+
+
+//    @Bean
+//    public AuthenticationEntryPoint customAuthEntryPoint(){
+//        return new A;
+//    }
+
+
+
 
 
 }

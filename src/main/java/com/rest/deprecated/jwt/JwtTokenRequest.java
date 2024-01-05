@@ -1,15 +1,7 @@
 package com.rest.deprecated.jwt;
 
-import lombok.*;
+public record JwtTokenRequest(String username, String password) {
 
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@EqualsAndHashCode
-//@Getter
-@Data
-public class JwtTokenRequest {
-    private final String username;
-    private final String password;
 }
 
 

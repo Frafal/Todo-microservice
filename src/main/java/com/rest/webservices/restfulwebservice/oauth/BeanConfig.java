@@ -21,25 +21,24 @@ public class BeanConfig {
 
         return WebClient.builder()
                 .baseUrl("http://localhost:9090")
-
 //                .filter(errorHandler())
 //                .defaultCookie("cookie-name", "cookie-value")
 //                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-
                 .build();
     }
 
-    public static ExchangeFilterFunction errorHandler() {
-        return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            if (clientResponse.statusCode().is5xxServerError()) {
-                return clientResponse.bodyToMono(String.class)
-                        .flatMap(errorBody -> Mono.error(new RuntimeException("Logic error.")));
-            } else if (clientResponse.statusCode().is4xxClientError()) {
-                return clientResponse.bodyToMono(String.class)
-                        .flatMap(errorBody -> Mono.error(new UserDefinedException(errorBody)));
-            } else {
-                return Mono.just(clientResponse);
-            }
-        });
-    }
+    //non utlizzato
+//    public static ExchangeFilterFunction errorHandler() {
+//        return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
+//            if (clientResponse.statusCode().is5xxServerError()) {
+//                return clientResponse.bodyToMono(String.class)
+//                        .flatMap(errorBody -> Mono.error(new RuntimeException("Logic error.")));
+//            } else if (clientResponse.statusCode().is4xxClientError()) {
+//                return clientResponse.bodyToMono(String.class)
+//                        .flatMap(errorBody -> Mono.error(new UserDefinedException(errorBody)));
+//            } else {
+//                return Mono.just(clientResponse);
+//            }
+//        });
+//    }
 }

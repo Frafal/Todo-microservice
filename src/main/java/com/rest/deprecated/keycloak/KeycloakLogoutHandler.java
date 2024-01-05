@@ -1,4 +1,4 @@
-package com.rest.webservices.restfulwebservice.oauth.keycloak;
+package com.rest.deprecated.keycloak;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
