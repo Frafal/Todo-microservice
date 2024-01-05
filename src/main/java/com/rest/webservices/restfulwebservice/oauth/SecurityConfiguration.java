@@ -112,11 +112,14 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsFilter()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //                .oauth2Login(Customizer.withDefaults())
-                .oauth2Client(Customizer.withDefaults())
+//                .oauth2Client(Customizer.withDefaults())
 //                .logout(Customizer.withDefaults())
 //                .logout((logout) -> logout.addLogoutHandler(keycloakLogoutHandler))
 //                .logout(logout -> logout.logoutSuccessUrl("http://localhost:4200"))
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(springAddonsJwtAuthenticationConverter)))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(
+                        jwt -> jwt.jwtAuthenticationConverter(springAddonsJwtAuthenticationConverter)
+                ))
+//                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, authException) -> {
                     response.addHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer realm=\"Restricted Content\"");
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());

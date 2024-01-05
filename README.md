@@ -1,5 +1,10 @@
-docker pull keycloak/keycloak:17.0.0
-docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=password keycloak/keycloak:17.0.0  start-dev
+
+docker run --name keycloak-ms -p 9090:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin -e KC_LOG_LEVEL=DEBUG quay.io/keycloak/keycloak:21.1.0 start-dev
+
+create realm: SpringBootKeycloak
+add client:  login-app
+add role: user
+set role to User
 
 
 curl --location 'http://localhost:9090/realms/MyAppRealm/protocol/openid-connect/token' \
