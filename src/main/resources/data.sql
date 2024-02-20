@@ -1,4 +1,7 @@
 insert into todo(id, username, description, target_date, is_done)
+values(10000, 'user', 'descrizione prova', CURRENT_TIMESTAMP(), false);
+
+insert into todo(id, username, description, target_date, is_done)
 values(10001, 'user', 'descrizione', CURRENT_TIMESTAMP(), false);
 
 insert into todo(id, username, description, target_date, is_done)

@@ -88,15 +88,17 @@ public class SecurityConfiguration {
 
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:4200"); // this allows all origin
+        config.addAllowedOrigin("http://localhost:4200"); // this allows origin
+        config.addAllowedOrigin("http://localhost:3000"); // this allows origin
         config.addAllowedHeader("*"); // this allows all headers
-        config.addAllowedMethod("OPTIONS");
-        config.addAllowedMethod("HEAD");
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("DELETE");
-        config.addAllowedMethod("PATCH");
+        config.addAllowedMethod("*"); // this allows all methods
+//        config.addAllowedMethod("OPTIONS");
+//        config.addAllowedMethod("HEAD");
+//        config.addAllowedMethod("GET");
+//        config.addAllowedMethod("PUT");
+//        config.addAllowedMethod("POST");
+//        config.addAllowedMethod("DELETE");
+//        config.addAllowedMethod("PATCH");
 
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -111,15 +113,16 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsFilter()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                //deprecated
 //                .oauth2Login(Customizer.withDefaults())
 //                .oauth2Client(Customizer.withDefaults())
 //                .logout(Customizer.withDefaults())
 //                .logout((logout) -> logout.addLogoutHandler(keycloakLogoutHandler))
 //                .logout(logout -> logout.logoutSuccessUrl("http://localhost:4200"))
+
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
                         jwt -> jwt.jwtAuthenticationConverter(springAddonsJwtAuthenticationConverter)
                 ))
-//                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, authException) -> {
                     response.addHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer realm=\"Restricted Content\"");
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
@@ -127,10 +130,11 @@ public class SecurityConfiguration {
                 }))
 
                 .authorizeHttpRequests(auth -> auth
+//                         deprecated
 //                        .requestMatchers(new MvcRequestMatcher(introspector, "/oidc/authenticate")).permitAll()
 //                        .requestMatchers(new MvcRequestMatcher(introspector, "/oidc/refreshtoken")).permitAll()
-                        .requestMatchers(new MvcRequestMatcher(introspector, "/users/*")).permitAll() //.hasAnyRole()
-//                        .hasAuthority("REALM_ROLE_USER")
+
+                        .requestMatchers(new MvcRequestMatcher(introspector, "/users/*")).permitAll()
                         .anyRequest()
                         .authenticated()
                 )
@@ -145,15 +149,6 @@ public class SecurityConfiguration {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
                 .build();
     }
-
-
-//    @Bean
-//    public AuthenticationEntryPoint customAuthEntryPoint(){
-//        return new A;
-//    }
-
-
-
 
 
 }
